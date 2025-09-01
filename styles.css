@@ -1,30 +1,409 @@
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="utf-8">
-    <link rel="stylesheet" href="./styles.css">
-    <title>RPG - Dragon Repeller</title>
-  </head>
-  <body>
-    <div id="game">
-      <div id="stats">
-        <span class="stat">XP: <strong><span id="xpText">0</span></strong></span>
-        <span class="stat">Health: <strong><span id="healthText">100</span></strong></span>
-        <span class="stat">Gold: <strong><span id="goldText">50</span></strong></span>
-      </div>
-      <div id="controls">
-        <button id="button1">Go to store</button>
-        <button id="button2">Go to cave</button>
-        <button id="button3">Fight dragon</button>
-      </div>
-      <div id="monsterStats">
-        <span class="stat">Monster Name: <strong><span id="monsterName"></span></strong></span>
-        <span class="stat">Health: <strong><span id="monsterHealth"></span></strong></span>
-      </div>
-      <div id="text">
-        Welcome to Dragon Repeller. You must defeat the dragon that is preventing people from leaving the town. You are in the town square. Where do you want to go? Use the buttons above.
-      </div>
-    </div>
-    <script src="./script.js"></script>
-  </body>
-</html>
+/* Importar fontes do Google */
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap');
+
+/* Reset e configurações básicas */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Crimson Text', serif;
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+  min-height: 100vh;
+  color: #e8e8e8;
+  overflow-x: hidden;
+}
+
+/* Efeito de partículas no background */
+body::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: 
+    radial-gradient(2px 2px at 20px 30px, #eee, transparent),
+    radial-gradient(2px 2px at 40px 70px, rgba(255,255,255,0.3), transparent),
+    radial-gradient(1px 1px at 90px 40px, #fff, transparent),
+    radial-gradient(1px 1px at 130px 80px, rgba(255,255,255,0.4), transparent);
+  background-repeat: repeat;
+  background-size: 200px 200px;
+  animation: sparkle 20s linear infinite;
+  pointer-events: none;
+  z-index: -1;
+}
+
+@keyframes sparkle {
+  0% { transform: translateY(0px); }
+  100% { transform: translateY(-200px); }
+}
+
+/* Container principal do jogo */
+#game {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 20px;
+  border: 2px solid rgba(255, 215, 0, 0.3);
+  box-shadow: 
+    0 0 30px rgba(255, 215, 0, 0.2),
+    inset 0 0 30px rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(10px);
+  margin-top: 20px;
+}
+
+/* Título do jogo */
+#game::before {
+  content: "🐉 DRAGON REPELLER 🐉";
+  display: block;
+  text-align: center;
+  font-family: 'Cinzel', serif;
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: #ffd700;
+  text-shadow: 
+    0 0 10px #ffd700,
+    0 0 20px #ffd700,
+    0 0 30px #ffd700;
+  margin-bottom: 30px;
+  letter-spacing: 3px;
+}
+
+/* Stats do jogador */
+#stats {
+  display: flex;
+  justify-content: space-around;
+  margin-bottom: 30px;
+  padding: 20px;
+  background: linear-gradient(45deg, rgba(139, 69, 19, 0.3), rgba(160, 82, 45, 0.3));
+  border-radius: 15px;
+  border: 2px solid rgba(255, 215, 0, 0.4);
+  box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.3);
+}
+
+.stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #f4f4f4;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+}
+
+.stat strong {
+  font-size: 1.4rem;
+  color: #ffd700;
+  text-shadow: 0 0 5px #ffd700;
+  margin-top: 5px;
+}
+
+/* Stats dos monstros */
+#monsterStats {
+  display: none;
+  justify-content: space-around;
+  margin-bottom: 20px;
+  padding: 15px;
+  background: linear-gradient(45deg, rgba(139, 0, 0, 0.4), rgba(178, 34, 34, 0.4));
+  border-radius: 15px;
+  border: 2px solid rgba(255, 0, 0, 0.4);
+  box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.3);
+}
+
+#monsterStats.show {
+  display: flex;
+}
+
+/* Controles (botões) */
+#controls {
+  display: flex;
+  gap: 15px;
+  margin-bottom: 30px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+button {
+  flex: 1;
+  min-width: 200px;
+  padding: 15px 25px;
+  font-family: 'Cinzel', serif;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #fff;
+  background: linear-gradient(45deg, #8b4513, #a0522d);
+  border: 2px solid #ffd700;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+  box-shadow: 
+    0 4px 8px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  position: relative;
+  overflow: hidden;
+}
+
+button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.5s;
+}
+
+button:hover {
+  transform: translateY(-2px);
+  background: linear-gradient(45deg, #a0522d, #cd853f);
+  box-shadow: 
+    0 6px 12px rgba(0, 0, 0, 0.4),
+    0 0 20px rgba(255, 215, 0, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3);
+  border-color: #ffed4e;
+}
+
+button:hover::before {
+  left: 100%;
+}
+
+button:active {
+  transform: translateY(0);
+  box-shadow: 
+    0 2px 4px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+/* Área de texto */
+#text {
+  background: linear-gradient(45deg, rgba(0, 0, 0, 0.6), rgba(20, 20, 20, 0.6));
+  padding: 25px;
+  border-radius: 15px;
+  border: 2px solid rgba(255, 215, 0, 0.3);
+  font-size: 1.2rem;
+  line-height: 1.6;
+  text-align: center;
+  box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.5);
+  min-height: 120px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+  #game {
+    margin: 10px;
+    padding: 15px;
+  }
+  
+  #game::before {
+    font-size: 2rem;
+    letter-spacing: 2px;
+  }
+  
+  #stats {
+    flex-direction: column;
+    gap: 15px;
+  }
+  
+  #controls {
+    flex-direction: column;
+  }
+  
+  button {
+    min-width: auto;
+  }
+  
+  #text {
+    font-size: 1.1rem;
+    padding: 20px;
+  }
+}
+
+/* Animações especiais */
+@keyframes glow {
+  0%, 100% { 
+    box-shadow: 0 0 20px rgba(255, 215, 0, 0.3);
+  }
+  50% { 
+    box-shadow: 0 0 30px rgba(255, 215, 0, 0.6);
+  }
+}
+
+#game {
+  animation: glow 3s ease-in-out infinite;
+}
+
+/* Efeito de brilho nos stats importantes */
+.stat strong {
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { 
+    text-shadow: 0 0 5px #ffd700;
+  }
+  50% { 
+    text-shadow: 0 0 15px #ffd700, 0 0 25px #ffd700;
+  }
+}
+
+/* Inventário/Mochila */
+#inventory {
+  margin-bottom: 20px;
+  padding: 20px;
+  background: linear-gradient(45deg, rgba(101, 67, 33, 0.4), rgba(139, 69, 19, 0.4));
+  border-radius: 15px;
+  border: 2px solid rgba(255, 215, 0, 0.4);
+  box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.3);
+}
+
+#inventory h3 {
+  font-family: 'Cinzel', serif;
+  font-size: 1.5rem;
+  color: #ffd700;
+  text-align: center;
+  margin-bottom: 15px;
+  text-shadow: 0 0 10px #ffd700;
+}
+
+#inventoryItems {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.inventory-slot {
+  background: linear-gradient(45deg, rgba(0, 0, 0, 0.6), rgba(20, 20, 20, 0.6));
+  border: 2px solid rgba(255, 215, 0, 0.5);
+  border-radius: 10px;
+  padding: 10px;
+  text-align: center;
+  min-width: 80px;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  position: relative;
+}
+
+.inventory-slot:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 5px 15px rgba(255, 215, 0, 0.3);
+  border-color: #ffed4e;
+}
+
+.inventory-slot.equipped {
+  border-color: #00ff00;
+  box-shadow: 0 0 15px rgba(0, 255, 0, 0.5);
+}
+
+.inventory-slot.equipped::after {
+  content: "⚔️";
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  font-size: 1.2rem;
+}
+
+.item-icon {
+  font-size: 2rem;
+  margin-bottom: 5px;
+}
+
+.item-name {
+  font-weight: 600;
+  color: #f4f4f4;
+  font-size: 0.9rem;
+  margin-bottom: 3px;
+}
+
+.item-power {
+  font-size: 0.8rem;
+  color: #ffd700;
+  font-weight: 500;
+}
+
+/* Área de ilustrações */
+#illustration {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 20px;
+  padding: 20px;
+  background: linear-gradient(45deg, rgba(0, 0, 0, 0.4), rgba(20, 20, 20, 0.4));
+  border-radius: 15px;
+  border: 2px solid rgba(255, 215, 0, 0.3);
+  box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.3);
+}
+
+#characterImage {
+  font-size: 8rem;
+  margin-bottom: 10px;
+  text-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
+  animation: float 3s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%, 100% { 
+    transform: translateY(0px); 
+  }
+  50% { 
+    transform: translateY(-10px); 
+  }
+}
+
+#locationText {
+  font-family: 'Cinzel', serif;
+  font-size: 1.3rem;
+  color: #ffd700;
+  text-shadow: 0 0 10px #ffd700;
+  font-weight: 600;
+}
+
+/* Slots vazios do inventário */
+#inventorySlots {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-top: 10px;
+}
+
+.empty-slot {
+  width: 80px;
+  height: 80px;
+  background: linear-gradient(45deg, rgba(0, 0, 0, 0.3), rgba(20, 20, 20, 0.3));
+  border: 2px dashed rgba(255, 215, 0, 0.3);
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(255, 215, 0, 0.5);
+  font-size: 1.5rem;
+}
+
+/* Responsividade para inventário */
+@media (max-width: 768px) {
+  #inventoryItems {
+    justify-content: center;
+  }
+  
+  .inventory-slot {
+    min-width: 70px;
+  }
+  
+  #characterImage {
+    font-size: 6rem;
+  }
+  
+  #locationText {
+    font-size: 1.1rem;
+  }
+}
