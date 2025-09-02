@@ -6,10 +6,11 @@ import { Inventory } from './components/Inventory';
 import { GameIllustration } from './components/GameIllustration';
 import { GameControls } from './components/GameControls';
 import { GameText } from './components/GameText';
-import { monsters } from './data/gameData';
+import { Shop } from './components/Shop';
+import { monsters, shopItems } from './data/gameData';
 
 function App() {
-  const { gameState, getCurrentLocation, getInventoryItems } = useGame();
+  const { gameState, getCurrentLocation, getInventoryItems, actions } = useGame();
   const currentLocation = getCurrentLocation();
   const inventoryItems = getInventoryItems();
   const currentMonster = gameState.fighting !== null ? monsters[gameState.fighting] : null;
@@ -25,10 +26,18 @@ function App() {
       <div className="relative z-10 max-w-6xl mx-auto p-4">
         {/* Header */}
         <header className="text-center mb-8">
-          <h1 className="font-cinzel text-6xl font-bold bg-gradient-to-r from-yellow-400 via-orange-500 to-red-500 bg-clip-text text-transparent drop-shadow-2xl tracking-wider mb-2">
-            DRAGON REPELLER
-          </h1>
-          <div className="text-2xl">🐉 ⚔️ 🏰</div>
+          <div className="relative">
+            {/* Glow effect behind title */}
+            <div className="absolute inset-0 bg-gradient-to-r from-yellow-400/20 via-orange-500/20 to-red-500/20 blur-3xl transform scale-110"></div>
+            
+            {/* Main title with enhanced styling */}
+            <h1 className="relative font-cinzel text-7xl font-black bg-gradient-to-r from-yellow-300 via-orange-400 to-red-400 bg-clip-text text-transparent drop-shadow-[0_0_30px_rgba(251,191,36,0.5)] tracking-[0.2em] mb-2 animate-pulse">
+              DRAGON SLAYER
+            </h1>
+            
+            {/* Decorative border */}
+            <div className="w-64 h-1 bg-gradient-to-r from-transparent via-yellow-400 to-transparent mx-auto rounded-full shadow-lg"></div>
+          </div>
         </header>
 
         {/* Main Game Grid */}
@@ -49,22 +58,35 @@ function App() {
               isVisible={gameState.fighting !== null}
             />
             
-            <Inventory items={inventoryItems} />
+            <Inventory items={inventoryItems} onEquipWeapon={actions.equipWeapon} />
           </div>
 
           {/* Center Column - Main Game Area */}
           <div className="lg:col-span-2 space-y-6">
-            <GameIllustration
-              illustration={currentLocation.illustration}
-              locationName={currentLocation.name}
-            />
-            
-            <GameText text={currentLocation.text} />
-            
-            <GameControls
-              buttonTexts={currentLocation.buttonText}
-              buttonFunctions={currentLocation.buttonFunctions}
-            />
+            {gameState.currentLocation === 1 ? (
+              // Show Shop when in store
+              <Shop 
+                items={shopItems}
+                playerGold={gameState.gold}
+                onBuyItem={actions.buyItem}
+                onGoBack={actions.goTown}
+              />
+            ) : (
+              // Show regular game content
+              <>
+                <GameIllustration
+                  illustration={currentLocation.illustration}
+                  locationName={currentLocation.name}
+                />
+                
+                <GameText text={currentLocation.text} />
+                
+                <GameControls
+                  buttonTexts={currentLocation.buttonText}
+                  buttonFunctions={currentLocation.buttonFunctions}
+                />
+              </>
+            )}
           </div>
         </div>
       </div>

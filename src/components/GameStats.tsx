@@ -1,5 +1,6 @@
 import React from 'react';
 import { getXpProgress } from '../utils/levelSystem';
+import { GameIcon } from '../utils/icons';
 
 interface GameStatsProps {
   xp: number;
@@ -15,17 +16,19 @@ export const GameStats: React.FC<GameStatsProps> = ({ xp, level, health, maxHeal
   return (
     <div className="space-y-6">
       <h3 className="font-cinzel text-2xl text-center text-yellow-400 font-bold tracking-wide">
-        Player Stats
+        Estatísticas do Jogador
       </h3>
       
       <div className="space-y-5">
         {/* Level */}
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4">
-            <div className="text-4xl drop-shadow-lg">🏆</div>
+            <div className="text-4xl drop-shadow-lg">
+              <GameIcon name="victory" size={32} className="text-purple-400" />
+            </div>
             <div>
-              <div className="text-sm text-slate-400 uppercase tracking-wider font-semibold">Level</div>
-              <div className="text-xs text-slate-500">Power Level</div>
+                              <div className="text-sm text-slate-400 uppercase tracking-wider font-semibold">Nível</div>
+                <div className="text-xs text-slate-500">Poder de Combate</div>
             </div>
           </div>
           <div className="text-right">
@@ -38,10 +41,12 @@ export const GameStats: React.FC<GameStatsProps> = ({ xp, level, health, maxHeal
         <div className="space-y-2">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
-              <div className="text-4xl drop-shadow-lg">⭐</div>
+              <div className="text-4xl drop-shadow-lg">
+                <GameIcon name="bonus" size={32} className="text-blue-400" />
+              </div>
               <div>
-                <div className="text-sm text-slate-400 uppercase tracking-wider font-semibold">Experience</div>
-                <div className="text-xs text-slate-500">Next Level Progress</div>
+                <div className="text-sm text-slate-400 uppercase tracking-wider font-semibold">Experiência</div>
+                <div className="text-xs text-slate-500">Progresso para Próximo Nível</div>
               </div>
             </div>
             <div className="text-right">
@@ -63,10 +68,12 @@ export const GameStats: React.FC<GameStatsProps> = ({ xp, level, health, maxHeal
         <div className="space-y-2">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
-              <div className="text-4xl drop-shadow-lg">❤️</div>
+              <div className="text-4xl drop-shadow-lg">
+                <GameIcon name="health" size={32} className="text-red-400" />
+              </div>
               <div>
-                <div className="text-sm text-slate-400 uppercase tracking-wider font-semibold">Health</div>
-                <div className="text-xs text-slate-500">Life Force</div>
+                <div className="text-sm text-slate-400 uppercase tracking-wider font-semibold">Vida</div>
+                <div className="text-xs text-slate-500">Força Vital</div>
               </div>
             </div>
             <div className="text-right">
@@ -87,10 +94,12 @@ export const GameStats: React.FC<GameStatsProps> = ({ xp, level, health, maxHeal
         {/* Gold */}
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4">
-            <div className="text-4xl drop-shadow-lg">💰</div>
+            <div className="text-4xl drop-shadow-lg">
+              <GameIcon name="gold" size={32} className="text-yellow-400" />
+            </div>
             <div>
-              <div className="text-sm text-slate-400 uppercase tracking-wider font-semibold">Gold</div>
-              <div className="text-xs text-slate-500">Currency</div>
+              <div className="text-sm text-slate-400 uppercase tracking-wider font-semibold">Ouro</div>
+              <div className="text-xs text-slate-500">Moeda</div>
             </div>
           </div>
           <div className="text-right">

@@ -2,6 +2,21 @@ export interface Weapon {
   name: string;
   power: number;
   icon: string;
+  price: number;
+  description: string;
+}
+
+export interface ShopItem {
+  id: string;
+  name: string;
+  type: 'weapon' | 'health' | 'potion';
+  price: number;
+  icon: string;
+  description: string;
+  effect: {
+    type: 'damage' | 'healing' | 'bonus';
+    value: number;
+  };
 }
 
 export interface Monster {

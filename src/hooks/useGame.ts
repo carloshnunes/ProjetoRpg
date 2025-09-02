@@ -1,7 +1,8 @@
 import { useState, useCallback } from 'react';
-import { GameState, InventoryItem } from '../types/game';
-import { weapons, monsters, locations } from '../data/gameData';
+import { GameState, InventoryItem, ShopItem } from '../types/game';
+import { weapons, monsters, locations, shopItems } from '../data/gameData';
 import { calculateLevel, getMaxHealth, getLevelBenefits } from '../utils/levelSystem';
+import { ASSETS } from '../utils/assets';
 
 const initialState: GameState = {
   xp: 0,
@@ -54,6 +55,33 @@ export const useGame = () => {
           currentWeapon: prev.currentWeapon + 1,
           inventory: [...prev.inventory, newWeapon.name]
         };
+      }
+      return prev;
+    });
+  }, []);
+
+  const buyItem = useCallback((item: ShopItem) => {
+    setGameState(prev => {
+      if (prev.gold >= item.price) {
+        let newState = {
+          ...prev,
+          gold: prev.gold - item.price
+        };
+
+        // Handle different item types
+        if (item.type === 'health') {
+          newState.health = Math.min(prev.health + item.effect.value, prev.maxHealth);
+        } else if (item.type === 'weapon') {
+          // Find the weapon in the weapons array
+          const weapon = weapons.find(w => w.name === item.id);
+          if (weapon && !prev.inventory.includes(weapon.name)) {
+            newState.inventory = [...prev.inventory, weapon.name];
+            // Don't auto-equip, let player choose
+          }
+        }
+        // Note: Potion effects would need to be implemented separately
+
+        return newState;
       }
       return prev;
     });
@@ -117,7 +145,7 @@ export const useGame = () => {
       if (newMonsterHealth <= 0) {
         if (prev.fighting === 2) {
           // Dragon defeated - win game
-          return { ...prev, currentLocation: 6 };
+          return { ...prev, monsterHealth: 0, currentLocation: 6 };
         } else {
           // Regular monster defeated
           const baseGoldReward = Math.floor(monster.level * 8);
@@ -131,6 +159,7 @@ export const useGame = () => {
           
           return {
             ...prev,
+            monsterHealth: 0, // Explicitly set monster health to 0
             xp: newXp,
             level: newLevel,
             maxHealth: newMaxHealth,
@@ -198,6 +227,18 @@ export const useGame = () => {
     });
   }, []);
 
+  const equipWeapon = useCallback((weaponIndex: number) => {
+    setGameState(prev => {
+      if (weaponIndex >= 0 && weaponIndex < prev.inventory.length) {
+        return {
+          ...prev,
+          currentWeapon: weaponIndex
+        };
+      }
+      return prev;
+    });
+  }, []);
+
   const pickTwo = useCallback(() => pickNumber(2), [pickNumber]);
   const pickEight = useCallback(() => pickNumber(8), [pickNumber]);
 
@@ -209,17 +250,42 @@ export const useGame = () => {
     let customIllustration = location.illustration;
     if (gameState.currentLocation === 3 && gameState.fighting !== null) {
       const monster = monsters[gameState.fighting];
+      const isDefeated = gameState.monsterHealth <= 0;
+      
       switch (monster.name) {
         case "slime":
-          customIllustration = "🟢💧🟢\n👤⚔️👹\n💥🔥💥";
+          customIllustration = isDefeated ? ASSETS.monsters.defeatedSlime : ASSETS.monsters.slime;
           break;
         case "fanged beast":
-          customIllustration = "🐺💀🐺\n👤⚔️👹\n💥🔥💥";
+          customIllustration = isDefeated ? ASSETS.monsters.defeatedFangedBeast : ASSETS.monsters.fangedBeast;
           break;
         case "dragon":
-          customIllustration = "🐉🔥🐉\n👤⚔️👹\n💥💀💥";
+          customIllustration = isDefeated ? ASSETS.monsters.dragonDefeated : ASSETS.monsters.dragon;
           break;
       }
+    }
+    
+    // Custom illustration for monster defeat scene
+    if (gameState.currentLocation === 4 && gameState.fighting !== null) {
+      const monster = monsters[gameState.fighting];
+      switch (monster.name) {
+        case "slime":
+          customIllustration = ASSETS.monsters.defeatedSlime;
+          break;
+        case "fanged beast":
+          customIllustration = ASSETS.monsters.defeatedFangedBeast;
+          break;
+        case "dragon":
+          customIllustration = ASSETS.monsters.dragonDefeated;
+          break;
+        default:
+          customIllustration = "💀✨💀\n💰👤💰\n🏆⚡🏆";
+      }
+    }
+    
+    // Custom illustration for victory scene (dragon defeated)
+    if (gameState.currentLocation === 6) {
+      customIllustration = ASSETS.monsters.dragonDefeated;
     }
     
     return {
@@ -255,22 +321,24 @@ export const useGame = () => {
     gameState,
     getCurrentLocation,
     getInventoryItems,
-    actions: {
-      goTown,
-      goStore,
-      goCave,
-      buyHealth,
-      buyWeapon,
-      sellWeapon,
-      fightSlime,
-      fightBeast,
-      fightDragon,
-      attack,
-      dodge,
-      restart,
-      easterEgg,
-      pickTwo,
-      pickEight
-    }
+          actions: {
+        goTown,
+        goStore,
+        goCave,
+        buyHealth,
+        buyWeapon,
+        buyItem,
+        sellWeapon,
+        fightSlime,
+        fightBeast,
+        fightDragon,
+        attack,
+        dodge,
+        restart,
+        easterEgg,
+        pickTwo,
+        pickEight,
+        equipWeapon
+      }
   };
 };

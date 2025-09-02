@@ -9,10 +9,16 @@
     "preview": "vite preview",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0"
   },
-  "keywords": ["rpg", "game", "typescript", "react"],
+  "keywords": [
+    "rpg",
+    "game",
+    "typescript",
+    "react"
+  ],
   "author": "Pichau",
   "license": "MIT",
   "dependencies": {
+    "lucide-react": "^0.542.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0"
   },
