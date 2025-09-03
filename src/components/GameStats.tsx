@@ -8,9 +8,10 @@ interface GameStatsProps {
   health: number;
   maxHealth: number;
   gold: number;
+  temporaryStrength?: number;
 }
 
-export const GameStats: React.FC<GameStatsProps> = ({ xp, level, health, maxHealth, gold }) => {
+export const GameStats: React.FC<GameStatsProps> = ({ xp, level, health, maxHealth, gold, temporaryStrength = 0 }) => {
   const xpProgress = getXpProgress(xp);
   
   return (
@@ -107,6 +108,25 @@ export const GameStats: React.FC<GameStatsProps> = ({ xp, level, health, maxHeal
             <div className="text-xs text-slate-500">G</div>
           </div>
         </div>
+
+        {/* Temporary Strength */}
+        {temporaryStrength > 0 && (
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-4">
+              <div className="text-4xl drop-shadow-lg">
+                <GameIcon name="bonus" size={32} className="text-orange-400" />
+              </div>
+              <div>
+                <div className="text-sm text-slate-400 uppercase tracking-wider font-semibold">Força Temporária</div>
+                <div className="text-xs text-slate-500">Bônus de Poção</div>
+              </div>
+            </div>
+            <div className="text-right">
+              <div className="text-3xl font-bold text-orange-400 drop-shadow-lg">+{temporaryStrength}</div>
+              <div className="text-xs text-slate-500">DMG</div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

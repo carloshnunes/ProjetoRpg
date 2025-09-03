@@ -50,6 +50,7 @@ function App() {
               health={gameState.health}
               maxHealth={gameState.maxHealth}
               gold={gameState.gold}
+              temporaryStrength={gameState.temporaryStrength}
             />
             
             <MonsterStats

@@ -159,7 +159,7 @@ export const locations: Location[] = [
   },
   {
     name: "fight",
-    buttonText: ["Atacar", "Esquivar", "Fugir"],
+    buttonText: ["Atacar", "Usar Item", "Fugir"],
     buttonFunctions: [],
     text: "⚔️ O combate começou! O monstro rosna e mostra suas garras. Você segura sua arma firmemente. O que você faz?",
     illustration: "⚔️👤⚔️\n🔥💥🔥\n💀👹💀"

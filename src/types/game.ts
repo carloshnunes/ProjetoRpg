@@ -45,6 +45,7 @@ export interface GameState {
   monsterHealth: number;
   inventory: string[];
   currentLocation: number;
+  temporaryStrength: number; // Força temporária de poções
 }
 
 export interface InventoryItem {

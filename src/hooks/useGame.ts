@@ -14,7 +14,8 @@ const initialState: GameState = {
   fighting: null,
   monsterHealth: 0,
   inventory: ["stick"],
-  currentLocation: 0
+  currentLocation: 0,
+  temporaryStrength: 0
 };
 
 export const useGame = () => {
@@ -78,8 +79,12 @@ export const useGame = () => {
             newState.inventory = [...prev.inventory, weapon.name];
             // Don't auto-equip, let player choose
           }
+        } else if (item.type === 'potion') {
+          // Handle potion effects
+          if (item.id === 'strength_potion') {
+            newState.temporaryStrength = prev.temporaryStrength + item.effect.value;
+          }
         }
-        // Note: Potion effects would need to be implemented separately
 
         return newState;
       }
@@ -125,8 +130,9 @@ export const useGame = () => {
       // Calculate damage to monster with level benefits
       const baseDamage = weapon.power;
       const levelDamageBonus = levelBenefits.damageBonus;
+      const temporaryStrengthBonus = prev.temporaryStrength; // Add temporary strength
       const randomBonus = Math.floor(Math.random() * 5) + 1; // 1-5 random bonus
-      const damageToMonster = baseDamage + levelDamageBonus + randomBonus;
+      const damageToMonster = baseDamage + levelDamageBonus + temporaryStrengthBonus + randomBonus;
       const newMonsterHealth = Math.max(0, prev.monsterHealth - damageToMonster);
       
       // Calculate damage to player with level defense
@@ -142,11 +148,11 @@ export const useGame = () => {
       }
       
       // Check if monster dies
-      if (newMonsterHealth <= 0) {
-        if (prev.fighting === 2) {
-          // Dragon defeated - win game
-          return { ...prev, monsterHealth: 0, currentLocation: 6 };
-        } else {
+              if (newMonsterHealth <= 0) {
+          if (prev.fighting === 2) {
+            // Dragon defeated - win game
+            return { ...prev, monsterHealth: 0, currentLocation: 6, temporaryStrength: 0 };
+          } else {
           // Regular monster defeated
           const baseGoldReward = Math.floor(monster.level * 8);
           const goldBonus = Math.floor(baseGoldReward * levelBenefits.goldBonus);
@@ -157,16 +163,17 @@ export const useGame = () => {
           const newLevel = calculateLevel(newXp);
           const newMaxHealth = getMaxHealth(newLevel);
           
-          return {
-            ...prev,
-            monsterHealth: 0, // Explicitly set monster health to 0
-            xp: newXp,
-            level: newLevel,
-            maxHealth: newMaxHealth,
-            health: Math.min(prev.health, newMaxHealth), // Heal to new max if level up
-            gold: prev.gold + goldReward,
-            currentLocation: 4
-          };
+                      return {
+              ...prev,
+              monsterHealth: 0, // Explicitly set monster health to 0
+              xp: newXp,
+              level: newLevel,
+              maxHealth: newMaxHealth,
+              health: Math.min(prev.health, newMaxHealth), // Heal to new max if level up
+              gold: prev.gold + goldReward,
+              currentLocation: 4,
+              temporaryStrength: 0 // Reset temporary strength after combat
+            };
         }
       }
       
@@ -178,28 +185,37 @@ export const useGame = () => {
     });
   }, []);
 
-  const dodge = useCallback(() => {
+  const useItem = useCallback(() => {
     setGameState(prev => {
       if (prev.fighting === null) return prev;
       
-      // 70% chance to dodge successfully
-      const dodgeSuccess = Math.random() < 0.7;
+      // Check if player has any usable items
+      const hasHealthPotion = prev.inventory.includes('health_potion');
+      const hasStrengthPotion = prev.inventory.includes('strength_potion');
       
-      if (dodgeSuccess) {
-        // Successful dodge - no damage taken
-        return prev;
-      } else {
-        // Failed dodge - take reduced damage
-        const monster = monsters[prev.fighting];
-        const reducedDamage = Math.max(1, Math.floor((monster.level * 2) / 2));
-        const newHealth = Math.max(0, prev.health - reducedDamage);
+      if (hasHealthPotion) {
+        // Use health potion first (priority for survival)
+        const newInventory = prev.inventory.filter(item => item !== 'health_potion');
+        const newHealth = Math.min(prev.health + 20, prev.maxHealth);
         
-        if (newHealth <= 0) {
-          return { ...prev, health: 0, currentLocation: 5 };
-        }
+        return {
+          ...prev,
+          inventory: newInventory,
+          health: newHealth
+        };
+      } else if (hasStrengthPotion) {
+        // Use strength potion
+        const newInventory = prev.inventory.filter(item => item !== 'strength_potion');
         
-        return { ...prev, health: newHealth };
+        return {
+          ...prev,
+          inventory: newInventory,
+          temporaryStrength: prev.temporaryStrength + 15
+        };
       }
+      
+      // No usable items found
+      return prev;
     });
   }, []);
 
@@ -295,14 +311,14 @@ export const useGame = () => {
         gameState.currentLocation === 0 ? [goStore, goCave, fightDragon] :
         gameState.currentLocation === 1 ? [buyHealth, buyWeapon, goTown] :
         gameState.currentLocation === 2 ? [fightSlime, fightBeast, goTown] :
-        gameState.currentLocation === 3 ? [attack, dodge, goTown] :
+        gameState.currentLocation === 3 ? [attack, useItem, goTown] :
         gameState.currentLocation === 4 ? [goTown, goTown, easterEgg] :
         gameState.currentLocation === 5 ? [restart, restart, restart] :
         gameState.currentLocation === 6 ? [restart, restart, restart] :
         [pickTwo, pickEight, goTown]
       ][0]
     };
-  }, [gameState.currentLocation, gameState.fighting, goStore, goCave, fightDragon, buyHealth, buyWeapon, goTown, fightSlime, fightBeast, attack, dodge, easterEgg, restart, pickTwo, pickEight]);
+  }, [gameState.currentLocation, gameState.fighting, goStore, goCave, fightDragon, buyHealth, buyWeapon, goTown, fightSlime, fightBeast, attack, useItem, easterEgg, restart, pickTwo, pickEight]);
 
   // Get inventory items with icons and power
   const getInventoryItems = useCallback((): InventoryItem[] => {
@@ -333,7 +349,7 @@ export const useGame = () => {
         fightBeast,
         fightDragon,
         attack,
-        dodge,
+        useItem,
         restart,
         easterEgg,
         pickTwo,
